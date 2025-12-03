@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Proof Guard — Warranty & Guarantee Tracker</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🛡️</text></svg>">
+    <meta name="description" content="Track your warranties and guarantees with Proof Guard">
+    <meta name="author" content="Rahy Bhuiyan">
+</head>
+<body>
+    <header class="topbar">
+        <button id="drawerToggle" class="icon-btn" title="Menu">☰</button>
+        <div class="brand">
+            <div class="logo">PG</div>
+            <h1>Proof Guard</h1>
+        </div>
+        <div class="actions">
+            <button id="searchToggleBtn" class="icon-btn" title="Search">🔍</button>
+            <div id="searchPopover" class="popover hidden">
+                <div class="popover-header">
+                    <strong>Search Warranties</strong>
+                    <input id="searchInput" class="search-input" type="search" 
+                           placeholder="Search by name, shop, serial, or PG..." 
+                           autocomplete="off" />
+                </div>
+                <div class="popover-body">
+                    <ul id="searchResults" class="list-grid"></ul>
+                </div>
+            </div>
+
+            <button id="exportCsvBtn" class="btn btn-light" title="Export to CSV">
+                📥 Export
+            </button>
+            <label for="importCsvInput" class="btn btn-light" title="Import from CSV">
+                📤 Import
+            </label>
+            <input id="importCsvInput" type="file" accept=".csv,text/csv" class="hidden-file" />
+
+            <button id="addToggleBtn" class="btn btn-primary" title="Add New Warranty">
+                + Add
+            </button>
+        </div>
+    </header>
+
+    <aside id="appDrawer" class="drawer">
+        <button id="logsBtn" class="drawer-link">
+            📜 Edit History
+        </button>
+        <button id="trashBtn" class="drawer-link">
+            🗑️ Trash
+        </button>
+        <button id="notifBtn" class="drawer-link">
+            🔔 Notifications 
+            <span id="notifCount" class="badge">0</span>
+        </button>
+        <button id="aboutBtn" class="drawer-link">
+            ℹ️ About
+        </button>
+    </aside>
+
+    <main class="main-content">
+        <div class="status-grid">
+            <div id="activeCard" class="status-card active">
+                <h3>Active</h3>
+                <p id="activeCount">0</p>
+                <small>Valid warranties</small>
+            </div>
+            <div id="expiringSoonCard" class="status-card soon">
+                <h3>Expiring Soon</h3>
+                <p id="expiringSoonCount">0</p>
+                <small>Need attention</small>
+            </div>
+            <div id="expiredCard" class="status-card expired">
+                <h3>Expired</h3>
+                <p id="expiredCount">0</p>
+                <small>Check for renewal</small>
+            </div>
+        </div>
+        
+        <h2 class="section-title">All Warranties</h2>
+        <ul id="itemList" class="list-grid">
+            <!-- Items will be dynamically inserted here -->
+        </ul>
+        
+        <p id="noDataMessage" class="no-data-msg">
+            📭 No warranties found. <br>
+            <small>Click "+ Add" to add your first warranty.</small>
+        </p>
+    </main>
+    
+    <footer class="footer">
+        Proof Guard v1.3.0 • Created by Rahy Bhuiyan • Your data is stored locally in your browser.
+    </footer>
+
+    <!-- Hidden area for printing -->
+    <div id="printArea" class="print-area"></div>
+
+    <!-- Add/Edit Dialog -->
+    <dialog id="addEditDialog" class="modal">
+        <div class="modal-form">
+            <div class="modal-header">
+                <h3 id="addEditTitle">Add New Warranty</h3>
+                <button id="addEditClose" class="icon-btn" aria-label="Close">✖</button>
+            </div>
+            <form id="addEditForm" class="modal-body">
+                <div id="addEditError" class="error-message hidden"></div>
+                
+                <div class="form-group">
+                    <label for="nameInput">Product Name *</label>
+                    <input id="nameInput" type="text" required 
+                           placeholder="e.g., Laptop, Refrigerator, Phone..." 
+                           maxlength="100" />
+                </div>
+
+                <div class="form-group">
+                    <label for="shopInput">Shop / Place of Purchase</label>
+                    <input id="shopInput" type="text" 
+                           placeholder="e.g., Amazon, Local Store, Brand Website..." 
+                           maxlength="100" />
+                </div>
+
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label for="kindInput">Type (Warranty/Guarantee)</label>
+                        <input id="kindInput" type="text" 
+                               placeholder="Manufacturer Warranty" 
+                               maxlength="50" />
+                    </div>
+                    <div class="form-group">
+                        <label for="serialInput">Serial / Model Number</label>
+                        <input id="serialInput" type="text" 
+                               placeholder="e.g., SN-123456, Model X-2023" 
+                               maxlength="50" />
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="buyDateInput">Purchase Date *</label>
+                    <input id="buyDateInput" type="date" required />
+                </div>
+
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label for="periodValueInput">Warranty Period *</label>
+                        <input id="periodValueInput" type="number" 
+                               value="1" min="1" max="100" 
+                               required step="1" />
+                        <small class="form-hint">Number of units</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="periodUnitInput">Period Unit *</label>
+                        <select id="periodUnitInput" required>
+                            <option value="Years">Years</option>
+                            <option value="Months">Months</option>
+                            <option value="Days">Days</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="remindDaysInput">Remind Me Before (Days)</label>
+                    <input id="remindDaysInput" type="number" 
+                           value="30" min="1" max="365" />
+                    <small class="form-hint">Days before expiry</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="notesInput">Notes / Additional Information</label>
+                    <textarea id="notesInput" 
+                              placeholder="Any important details, terms, or conditions..."
+                              maxlength="500" rows="4"></textarea>
+                    <small class="form-hint">Optional</small>
+                </div>
+
+                <div class="modal-actions">
+                    <button id="addSaveBtn" class="btn btn-primary" type="submit">
+                        Save
+                    </button>
+                    <button id="addCancelBtn" class="btn btn-light" type="button">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </dialog>
+
+    <!-- Details Dialog -->
+    <dialog id="detailsDialog" class="modal">
+        <div class="modal-form">
+            <div class="modal-header">
+                <h3 id="dName">Product Name</h3>
+                <button id="detailsClose" class="icon-btn" aria-label="Close">✖</button>
+            </div>
+            <div class="modal-body">
+                <div id="dMeta"></div>
+                <div id="dContent"></div>
+            </div>
+            <div class="modal-actions">
+                <button id="printBtn" class="btn btn-light">🖨️ Print</button>
+                <button id="dEditBtn" class="btn btn-light">✏️ Edit</button>
+                <button id="dDeleteBtn" class="btn btn-danger">Move to Trash</button>
+            </div>
+        </div>
+    </dialog>
+    
+    <!-- Status List Dialog -->
+    <dialog id="statusListDialog" class="modal">
+        <div class="modal-form">
+            <div class="modal-header">
+                <h3 id="statusListTitle"></h3>
+                <button id="statusListClose" class="icon-btn" aria-label="Close">✖</button>
+            </div>
+            <div class="modal-body">
+                <ul id="statusList" class="list-grid"></ul>
+            </div>
+        </div>
+    </dialog>
+
+    <!-- Trash Dialog -->
+    <dialog id="trashDialog" class="modal">
+        <div class="modal-form">
+            <div class="modal-header">
+                <h3>🗑️ Trash</h3>
+                <button id="trashClose" class="icon-btn" aria-label="Close">✖</button>
+            </div>
+            <div class="modal-body">
+                <div style="margin-bottom: 15px; color: var(--muted); font-size: 14px;">
+                    Deleted items are kept here. You can restore or permanently delete them.
+                </div>
+                <ul id="trashList" class="list-grid"></ul>
+            </div>
+        </div>
+    </dialog>
+
+    <!-- Logs Dialog - Fix 1.1: Proper button placement -->
+    <dialog id="logsDialog" class="modal">
+        <div class="modal-form">
+            <div class="modal-header">
+                <h3>📜 Edit History</h3>
+                <div class="logs-header-actions">
+                    <button id="logsSearchToggleBtn" class="icon-btn" title="Search">🔍</button>
+                    <button id="logsClose" class="icon-btn" aria-label="Close">✖</button>
+                </div>
+            </div>
+            <div class="modal-body">
+                <div id="logsSearchContainer" style="display: none; margin-bottom: 15px;">
+                    <div style="display: flex; gap: 10px;">
+                        <input id="logsSearchInput" type="search" placeholder="Search by PG Serial or Product Name" 
+                               style="flex: 1; padding: 10px 14px; font-size: 14px; border-radius: 8px; border: 1px solid var(--border); background: var(--card); color: var(--text);" />
+                        <button id="clearLogsSearchBtn" class="btn btn-light" style="white-space: nowrap;">Clear</button>
+                    </div>
+                </div>
+                <ul id="logsList" class="log-list"></ul>
+            </div>
+        </div>
+    </dialog>
+
+    <!-- Confirm Dialog -->
+    <dialog id="confirmDialog" class="modal">
+        <div class="modal-form">
+            <div class="modal-header">
+                <h3 id="confirmTitle">Confirm Action</h3>
+                <button id="confirmClose" class="icon-btn" aria-label="Close">✖</button>
+            </div>
+            <div class="modal-body">
+                <div id="confirmMessage"></div>
+            </div>
+            <div class="modal-actions">
+                <button id="confirmCancel" class="btn btn-light">Cancel</button>
+                <button id="confirmBtn" class="btn btn-danger">Confirm</button>
+            </div>
+        </div>
+    </dialog>
+
+    <!-- Snackbar for notifications -->
+    <div id="snackbar" class="snackbar"></div>
+
+    <script src="app.js"></script>
+</body>
+</html>
